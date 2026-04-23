@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter_Tight, Instrument_Serif, JetBrains_Mono } from 'next/font/google';
+import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 
 const interTight = Inter_Tight({
@@ -62,7 +63,7 @@ export default function RootLayout({
       className={`${interTight.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
     >
       <body style={{ fontFamily: 'var(--font-inter-tight), "Inter", -apple-system, sans-serif' }}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
