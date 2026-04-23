@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { LandingHero } from './landing/LandingHero';
 import { HowItWorks } from './landing/HowItWorks';
@@ -5,6 +7,7 @@ import { SignalBreakdown } from './landing/SignalBreakdown';
 import { SocialProof } from './landing/SocialProof';
 import { LandingFooter } from './landing/LandingFooter';
 import { Wordmark } from '@/components/Wordmark';
+import { useAuthStore } from '@/store/authStore';
 
 export default function LandingPage() {
   return (
@@ -22,6 +25,9 @@ export default function LandingPage() {
 }
 
 function LandingNav() {
+  const { session, isInitialized } = useAuthStore();
+  const isSignedIn = isInitialized && !!session;
+
   return (
     <nav style={{
       display: 'flex',
@@ -39,12 +45,20 @@ function LandingNav() {
         <a href="#how-it-works" style={{ color: 'inherit', textDecoration: 'none' }}>How it works</a>
         <a href="#the-score" style={{ color: 'inherit', textDecoration: 'none' }}>The score</a>
         <a href="#changelog" style={{ color: 'inherit', textDecoration: 'none' }}>Changelog</a>
-        <Link href="/sign-in" className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 13 }}>
-          Sign in
-        </Link>
-        <Link href="/sign-up" className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 13 }}>
-          Get started free
-        </Link>
+        {isSignedIn ? (
+          <Link href="/discover" className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 13 }}>
+            Go to feed →
+          </Link>
+        ) : (
+          <>
+            <Link href="/sign-in" className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 13 }}>
+              Sign in
+            </Link>
+            <Link href="/sign-up" className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 13 }}>
+              Get started free
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );

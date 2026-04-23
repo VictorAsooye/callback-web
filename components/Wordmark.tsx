@@ -14,7 +14,7 @@ export function Wordmark({ height = 28, inverted = false, href = '/' }: Wordmark
         src="/logo.png"
         alt="Callback"
         height={height}
-        width={height * (1672 / 941)} // preserve aspect ratio
+        width={height * (1536 / 1024)} // preserve aspect ratio (new logo 1536×1024)
         style={{
           height,
           width: 'auto',

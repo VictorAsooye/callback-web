@@ -63,6 +63,7 @@ export function useJobs() {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
   const [userPrefs, setUserPrefs] = useState<(UserPreferences & { targetRole?: string }) | null>(null);
+  const [hasResume, setHasResume] = useState<boolean | null>(null);
 
   const fetchingRef = useRef(false);
 
@@ -80,13 +81,14 @@ export function useJobs() {
     try {
       const supabase = getSupabaseClient();
       const [profileResult, applicationsResult] = await Promise.all([
-        supabase.from('users').select('preferences').eq('id', session.user.id).single(),
+        supabase.from('users').select('preferences, resume_text').eq('id', session.user.id).single(),
         supabase.from('applications').select('jobs(source_id)').eq('user_id', session.user.id),
       ]);
 
       const prefs: UserPreferences & { targetRole?: string } =
         (profileResult.data?.preferences as UserPreferences & { targetRole?: string }) ?? { skills: [], wantsRemote: false };
       setUserPrefs(prefs);
+      setHasResume(!!profileResult.data?.resume_text);
 
       const seenSourceIds = new Set<string>(
         (applicationsResult.data ?? []).flatMap((a: { jobs: unknown }) => {
@@ -155,5 +157,5 @@ export function useJobs() {
     }
   };
 
-  return { jobs, loading, error, reload: loadJobs, userPrefs };
+  return { jobs, loading, error, reload: loadJobs, userPrefs, hasResume };
 }

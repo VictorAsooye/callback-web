@@ -69,9 +69,9 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
       >
         {/* Header row */}
         <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
-          <Placeholder label={avatarLabel} w={42} h={42} />
+          <Placeholder label={avatarLabel} w={44} h={44} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 2 }} className="mono">
+            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 3 }} className="mono">
               {job.company.toUpperCase()}
             </div>
             <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
@@ -81,37 +81,37 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
           <ScoreRing value={job.score} size={52} stroke={4} />
         </div>
 
-        {/* Chips */}
+        {/* Meta chips — pill bordered, matching mockup */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
           {job.location && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: 'var(--ink-soft)' }}>
-              <Icon d={Icons.loc} size={11} />
+            <span className="chip" style={{ fontSize: 11 }}>
+              <Icon d={Icons.loc} size={10} />
               {job.location}
             </span>
           )}
           {job.salary && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: 'var(--ink-soft)', marginLeft: 8 }}>
-              <Icon d={Icons.cash} size={11} />
+            <span className="chip" style={{ fontSize: 11 }}>
+              <Icon d={Icons.cash} size={10} />
               {job.salary}
             </span>
           )}
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: 'var(--ink-mute)', marginLeft: 8 }}>
-            <Icon d={Icons.clock} size={11} />
+          <span className="chip" style={{ fontSize: 11 }}>
+            <Icon d={Icons.clock} size={10} />
             {posted}
           </span>
           {job.remote && (
-            <span className="chip warn" style={{ fontSize: 10, padding: '2px 7px', marginLeft: 4 }}>Remote</span>
+            <span className="chip warn" style={{ fontSize: 11 }}>Remote</span>
           )}
         </div>
 
         {/* Score bar */}
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: matched.length > 0 || missing.length > 0 ? 12 : 0 }}>
           <ScoreSegments segments={segments} height={5} />
         </div>
 
         {/* Skill chips */}
         {(matched.length > 0 || missing.length > 0) && (
-          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 12 }}>
             {matched.map(s => (
               <Chip key={s} variant="match" icon={<Icon d={Icons.check} size={10} strokeWidth={2.4} />}>
                 {s}
@@ -130,10 +130,14 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
 type SortKey = 'score' | 'recency' | 'salary';
 
 export default function DiscoverPage() {
-  const { jobs, loading, error, userPrefs } = useJobs();
-  const { session } = useAuthStore();
+  const { jobs, loading, error, userPrefs, hasResume } = useJobs();
+  const { session, isInitialized } = useAuthStore();
   const [sort, setSort] = useState<SortKey>('score');
   const [filterRemote, setFilterRemote] = useState(false);
+
+  const profileLoaded = isInitialized && session && hasResume !== null;
+  const needsResume = profileLoaded && !hasResume;
+  const needsPrefs = profileLoaded && hasResume && !userPrefs?.targetRole;
 
   const sortedJobs = useMemo(() => {
     let list = filterRemote ? jobs.filter(j => j.remote) : jobs;
@@ -207,25 +211,66 @@ export default function DiscoverPage() {
 
         {/* Content */}
         <div style={{ flex: 1, overflow: 'auto', padding: '24px 28px' }}>
-          {loading && jobs.length === 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: 12, color: 'var(--ink-mute)' }}>
+
+          {/* Not signed in */}
+          {!session && isInitialized && (
+            <div style={{ padding: '20px 24px', borderRadius: 10, background: 'var(--surface)', color: 'var(--ink-soft)', fontSize: 13, marginBottom: 20 }}>
+              Please <Link href="/sign-in" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sign in</Link> to load your personalised feed.
+            </div>
+          )}
+
+          {/* Onboarding: no resume yet */}
+          {needsResume && (
+            <div style={{ padding: '28px 32px', borderRadius: 12, background: 'var(--surface)', border: '1px solid var(--hairline)', marginBottom: 24, display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: 'color-mix(in oklch, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon d={Icons.upload} size={22} style={{ color: 'var(--accent)' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', marginBottom: 6, letterSpacing: '-0.01em' }}>Upload your resume first</div>
+                <div style={{ fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.6, marginBottom: 16 }}>
+                  Callback scores every job against <em>your</em> resume. Without it, we can&apos;t calculate match quality, keyword alignment, or seniority fit.
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <Link href="/resume" className="btn btn-primary" style={{ padding: '9px 18px', fontSize: 13 }}>
+                    Upload resume →
+                  </Link>
+                  <Link href="/preferences" className="btn btn-ghost" style={{ padding: '9px 18px', fontSize: 13 }}>
+                    Set preferences
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Onboarding: resume uploaded but no target role */}
+          {needsPrefs && (
+            <div style={{ padding: '20px 24px', borderRadius: 10, background: 'color-mix(in oklch, var(--accent) 10%, transparent)', border: '1px solid color-mix(in oklch, var(--accent) 25%, transparent)', marginBottom: 20, fontSize: 13, color: 'var(--ink-soft)', display: 'flex', alignItems: 'center', gap: 16 }}>
+              <Icon d={Icons.filter} size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+              <span style={{ flex: 1 }}>
+                Set a <strong style={{ color: 'var(--ink)' }}>target role</strong> in preferences so we can find the right listings for you.
+              </span>
+              <Link href="/preferences" className="btn btn-ghost" style={{ padding: '7px 14px', fontSize: 12, flexShrink: 0 }}>
+                Set preferences →
+              </Link>
+            </div>
+          )}
+
+          {/* Loading spinner */}
+          {loading && jobs.length === 0 && !needsResume && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50%', gap: 12, color: 'var(--ink-mute)' }}>
               <div style={{ width: 32, height: 32, border: '2px solid var(--hairline)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'cb-spin 0.8s linear infinite' }} />
               <div style={{ fontSize: 13 }}>Fetching and scoring listings…</div>
             </div>
           )}
 
+          {/* Error */}
           {error && (
             <div style={{ padding: '16px 20px', borderRadius: 10, background: 'var(--penalty-soft)', color: 'var(--penalty)', fontSize: 13, marginBottom: 20 }}>
               {error}
             </div>
           )}
 
-          {!session && (
-            <div style={{ padding: '20px 24px', borderRadius: 10, background: 'var(--surface)', color: 'var(--ink-soft)', fontSize: 13, marginBottom: 20 }}>
-              Please <Link href="/sign-in" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sign in</Link> to load your personalised feed.
-            </div>
-          )}
-
+          {/* Job grid */}
           {sortedJobs.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
               {sortedJobs.map(job => (
