@@ -54,7 +54,7 @@ export default function SignUpPage() {
     <div style={{ width: '100%', minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: 420, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, justifyContent: 'center' }}>
-          <Wordmark height={22} />
+          <Wordmark height={32} />
         </div>
 
         <div className="card" style={{ padding: 32 }}>

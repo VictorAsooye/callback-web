@@ -19,9 +19,9 @@ export function Wordmark({ height = 28, inverted = false, href = '/' }: Wordmark
           height,
           width: 'auto',
           // Invert for use on dark ink backgrounds (e.g. footer, auth panel)
-          filter: inverted ? 'invert(1)' : 'none',
-          // In dark theme the logo is black — make it white
-          // We use a CSS filter approach that works with the theme
+          // When not explicitly inverted, leave filter undefined so the CSS dark-theme
+          // rule ([data-theme="dark"] img[alt="Callback"] { filter: invert(1) }) can apply.
+          filter: inverted ? 'invert(1)' : undefined,
           display: 'block',
         }}
         priority
