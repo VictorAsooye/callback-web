@@ -1,45 +1,37 @@
-import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface WordmarkProps {
-  size?: number;
+  height?: number;
   inverted?: boolean;
   href?: string;
 }
 
-export function Wordmark({ size = 22, inverted = false, href = '/' }: WordmarkProps) {
+export function Wordmark({ height = 28, inverted = false, href = '/' }: WordmarkProps) {
   const content = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <svg width={size} height={size} viewBox="0 0 22 22">
-        <circle
-          cx="11" cy="11" r="10"
-          fill="none"
-          stroke={inverted ? 'var(--bg)' : 'var(--ink)'}
-          strokeWidth="1.5"
-        />
-        <path
-          d="M6 11a5 5 0 015-5"
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-        <circle cx="11" cy="11" r="2" fill={inverted ? 'var(--bg)' : 'var(--ink)'} />
-      </svg>
-      <span style={{
-        fontSize: size * 0.82,
-        fontWeight: 600,
-        letterSpacing: -0.02,
-        color: inverted ? 'var(--bg)' : 'var(--ink)',
-      }}>
-        Callback
-      </span>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Image
+        src="/logo.png"
+        alt="Callback"
+        height={height}
+        width={height * (1672 / 941)} // preserve aspect ratio
+        style={{
+          height,
+          width: 'auto',
+          // Invert for use on dark ink backgrounds (e.g. footer, auth panel)
+          filter: inverted ? 'invert(1)' : 'none',
+          // In dark theme the logo is black — make it white
+          // We use a CSS filter approach that works with the theme
+          display: 'block',
+        }}
+        priority
+      />
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} style={{ textDecoration: 'none' }}>
+      <Link href={href} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
         {content}
       </Link>
     );

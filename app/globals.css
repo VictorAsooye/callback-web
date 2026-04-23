@@ -1,6 +1,11 @@
 /* Callback Web — Design System */
 /* Fonts imported via next/font in layout.tsx */
 
+/* ——— Logo: auto-invert in dark theme (logo is black on transparent) ——— */
+[data-theme="dark"] img[alt="Callback"] {
+  filter: invert(1);
+}
+
 /* ——— Reset ——— */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }

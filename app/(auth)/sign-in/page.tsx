@@ -41,7 +41,7 @@ export default function SignInPage() {
       <div style={{ width: 400, display: 'flex', flexDirection: 'column', gap: 0 }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, justifyContent: 'center' }}>
-          <Wordmark size={22} />
+          <Wordmark height={22} />
         </div>
 
         <div className="card" style={{ padding: 32 }}>
