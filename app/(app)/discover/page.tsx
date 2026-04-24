@@ -141,9 +141,10 @@ export default function DiscoverPage() {
   const [sort, setSort] = useState<SortKey>('score');
   const [filterRemote, setFilterRemote] = useState(false);
 
-  const profileLoaded = isInitialized && session && hasResume !== null;
+  const profileLoaded = isInitialized && session && hasResume !== null && !loading;
   const needsResume = profileLoaded && !hasResume;
   const needsPrefs = profileLoaded && hasResume && !userPrefs?.targetRole;
+  const isOnboarding = needsResume || needsPrefs;
 
   const sortedJobs = useMemo(() => {
     let list = filterRemote ? jobs.filter(j => j.remote) : jobs;
@@ -216,68 +217,125 @@ export default function DiscoverPage() {
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '24px 28px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: isOnboarding ? 0 : '24px 28px' }}>
 
-          {/* Not signed in */}
-          {!session && isInitialized && (
-            <div style={{ padding: '20px 24px', borderRadius: 10, background: 'var(--surface)', color: 'var(--ink-soft)', fontSize: 13, marginBottom: 20 }}>
-              Please <Link href="/sign-in" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sign in</Link> to load your personalised feed.
-            </div>
-          )}
-
-          {/* Onboarding: no resume yet */}
-          {needsResume && (
-            <div style={{ padding: '28px 32px', borderRadius: 12, background: 'var(--surface)', border: '1px solid var(--hairline)', marginBottom: 24, display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: 'color-mix(in oklch, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon d={Icons.upload} size={22} style={{ color: 'var(--accent)' }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', marginBottom: 6, letterSpacing: '-0.01em' }}>Upload your resume first</div>
-                <div style={{ fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.6, marginBottom: 16 }}>
-                  Callback scores every job against <em>your</em> resume. Without it, we can&apos;t calculate match quality, keyword alignment, or seniority fit.
+          {/* ── Onboarding wall ── */}
+          {isOnboarding && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100%', padding: '40px 24px' }}>
+              <div style={{ maxWidth: 520, width: '100%' }}>
+                {/* Header */}
+                <div style={{ marginBottom: 36, textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 8 }}>
+                    Two quick steps before your feed
+                  </div>
+                  <div style={{ fontSize: 14, color: 'var(--ink-mute)', lineHeight: 1.6 }}>
+                    Callback needs your resume and preferences to score every listing against your exact profile.
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <Link href="/resume" className="btn btn-primary" style={{ padding: '9px 18px', fontSize: 13 }}>
-                    Upload resume →
-                  </Link>
-                  <Link href="/preferences" className="btn btn-ghost" style={{ padding: '9px 18px', fontSize: 13 }}>
-                    Set preferences
-                  </Link>
+
+                {/* Step 1 — Resume */}
+                <div className="card" style={{
+                  padding: '24px 28px',
+                  marginBottom: 12,
+                  display: 'flex',
+                  gap: 20,
+                  alignItems: 'center',
+                  opacity: 1,
+                  borderColor: !hasResume ? 'color-mix(in oklch, var(--accent) 40%, transparent)' : 'var(--hairline)',
+                }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: hasResume
+                      ? 'color-mix(in oklch, var(--positive) 15%, transparent)'
+                      : 'color-mix(in oklch, var(--accent) 15%, transparent)',
+                  }}>
+                    <Icon d={hasResume ? Icons.check : Icons.upload} size={20}
+                      style={{ color: hasResume ? 'var(--positive)' : 'var(--accent)' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', marginBottom: 3 }}>
+                      {hasResume ? 'Resume uploaded ✓' : 'Upload your resume'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--ink-mute)' }}>
+                      {hasResume
+                        ? 'Skills extracted and ready for scoring'
+                        : 'We extract your skills, experience level, and role signals'}
+                    </div>
+                  </div>
+                  {!hasResume && (
+                    <Link href="/resume" className="btn btn-primary" style={{ padding: '9px 18px', fontSize: 13, flexShrink: 0 }}>
+                      Upload →
+                    </Link>
+                  )}
+                </div>
+
+                {/* Step 2 — Preferences */}
+                <div className="card" style={{
+                  padding: '24px 28px',
+                  marginBottom: 32,
+                  display: 'flex',
+                  gap: 20,
+                  alignItems: 'center',
+                  opacity: hasResume ? 1 : 0.45,
+                  borderColor: hasResume && needsPrefs ? 'color-mix(in oklch, var(--accent) 40%, transparent)' : 'var(--hairline)',
+                }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: !needsPrefs && hasResume
+                      ? 'color-mix(in oklch, var(--positive) 15%, transparent)'
+                      : 'color-mix(in oklch, var(--accent) 15%, transparent)',
+                  }}>
+                    <Icon d={!needsPrefs && hasResume ? Icons.check : Icons.filter} size={20}
+                      style={{ color: !needsPrefs && hasResume ? 'var(--positive)' : 'var(--accent)' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', marginBottom: 3 }}>
+                      {!needsPrefs && hasResume ? 'Preferences set ✓' : 'Set your preferences'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--ink-mute)' }}>
+                      {!needsPrefs && hasResume
+                        ? 'Target role and filters ready'
+                        : 'Target role, salary floor, remote preference, and more'}
+                    </div>
+                  </div>
+                  {hasResume && needsPrefs && (
+                    <Link href="/preferences" className="btn btn-primary" style={{ padding: '9px 18px', fontSize: 13, flexShrink: 0 }}>
+                      Set up →
+                    </Link>
+                  )}
+                </div>
+
+                {/* Progress indicator */}
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{ width: 32, height: 3, borderRadius: 99, background: hasResume ? 'var(--positive)' : 'var(--hairline-strong)' }} />
+                  <div style={{ width: 32, height: 3, borderRadius: 99, background: !needsPrefs && hasResume ? 'var(--positive)' : 'var(--hairline-strong)' }} />
+                  <div style={{ marginLeft: 8, fontSize: 12, color: 'var(--ink-mute)' }}>
+                    {hasResume && !needsPrefs ? '2 of 2 — loading your feed…' : hasResume ? '1 of 2 complete' : '0 of 2 complete'}
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Onboarding: resume uploaded but no target role */}
-          {needsPrefs && (
-            <div style={{ padding: '20px 24px', borderRadius: 10, background: 'color-mix(in oklch, var(--accent) 10%, transparent)', border: '1px solid color-mix(in oklch, var(--accent) 25%, transparent)', marginBottom: 20, fontSize: 13, color: 'var(--ink-soft)', display: 'flex', alignItems: 'center', gap: 16 }}>
-              <Icon d={Icons.filter} size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-              <span style={{ flex: 1 }}>
-                Set a <strong style={{ color: 'var(--ink)' }}>target role</strong> in preferences so we can find the right listings for you.
-              </span>
-              <Link href="/preferences" className="btn btn-ghost" style={{ padding: '7px 14px', fontSize: 12, flexShrink: 0 }}>
-                Set preferences →
-              </Link>
-            </div>
-          )}
-
-          {/* Loading spinner */}
-          {loading && jobs.length === 0 && !needsResume && (
+          {/* ── Loading spinner ── */}
+          {!isOnboarding && loading && jobs.length === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50%', gap: 12, color: 'var(--ink-mute)' }}>
               <div style={{ width: 32, height: 32, border: '2px solid var(--hairline)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'cb-spin 0.8s linear infinite' }} />
               <div style={{ fontSize: 13 }}>Fetching and scoring listings…</div>
             </div>
           )}
 
-          {/* Error */}
-          {error && (
+          {/* ── Error ── */}
+          {!isOnboarding && error && (
             <div style={{ padding: '16px 20px', borderRadius: 10, background: 'var(--penalty-soft)', color: 'var(--penalty)', fontSize: 13, marginBottom: 20 }}>
               {error}
             </div>
           )}
 
-          {/* Job grid */}
-          {sortedJobs.length > 0 && (
+          {/* ── Job grid ── */}
+          {!isOnboarding && sortedJobs.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
               {sortedJobs.map(job => (
                 <JobCard key={job.source_id} job={job} userSkills={userSkills} />

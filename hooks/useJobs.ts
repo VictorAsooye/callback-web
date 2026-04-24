@@ -88,7 +88,15 @@ export function useJobs() {
       const prefs: UserPreferences & { targetRole?: string } =
         (profileResult.data?.preferences as UserPreferences & { targetRole?: string }) ?? { skills: [], wantsRemote: false };
       setUserPrefs(prefs);
-      setHasResume(!!profileResult.data?.resume_text);
+      const resumeReady = !!profileResult.data?.resume_text;
+      setHasResume(resumeReady);
+
+      // Gate: require both resume and target role before fetching listings
+      if (!resumeReady || !prefs.targetRole) {
+        setLoading(false);
+        fetchingRef.current = false;
+        return;
+      }
 
       const seenSourceIds = new Set<string>(
         (applicationsResult.data ?? []).flatMap((a: { jobs: unknown }) => {
@@ -99,7 +107,7 @@ export function useJobs() {
         }),
       );
 
-      const role = prefs.targetRole ?? 'Software Engineer';
+      const role = prefs.targetRole;
 
       // Stale-while-revalidate: show cache instantly if available
       const cached = loadJobCache<ScoredJob>(session.user.id, role);
