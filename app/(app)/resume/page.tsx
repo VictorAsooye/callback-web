@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { WebSidebar } from '@/components/WebSidebar';
 import { Icon, Icons } from '@/components/Icons';
 import { useAuthStore } from '@/store/authStore';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase'; // used for paste-text path
 
 const MAX_SIZE_MB = 4;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
@@ -56,16 +56,7 @@ export default function ResumePage() {
 
     try {
       if (file) {
-        // Upload to Supabase Storage, then call the API route for extraction
-        const supabase = getSupabaseClient();
-        const path = `${session.user.id}/resume.pdf`;
-        const { error: uploadError } = await supabase.storage
-          .from('resumes')
-          .upload(path, file, { upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        // Call API route to extract and save
+        // Send file to API route — Claude extracts text + skills, saves to DB
         const formData = new FormData();
         formData.append('file', file);
         formData.append('userId', session.user.id);
