@@ -71,57 +71,55 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
       onClick={handleClick}
       style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}
     >
-      <div className="card" style={{ padding: 20, cursor: 'pointer', transition: 'border-color 0.15s' }}
+      <div className="card" style={{ padding: 22, cursor: 'pointer', transition: 'border-color 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--hairline-strong)')}
         onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--hairline)')}
       >
-        {/* Header row */}
-        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
-          <Placeholder label={avatarLabel} w={44} h={44} />
+        {/* Header row — avatar + company/title + score ring */}
+        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 16 }}>
+          <Placeholder label={avatarLabel} w={52} h={52} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 3 }} className="mono">
-              {job.company.toUpperCase()}
+            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, letterSpacing: '0.02em' }}>
+              {job.company}
             </div>
-            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
               {job.title}
             </div>
           </div>
-          <ScoreRing value={job.score} size={52} stroke={4} />
+          <ScoreRing value={job.score} size={60} stroke={5} />
         </div>
 
-        {/* Meta chips — pill bordered, matching mockup */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+        {/* Meta chips */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
           {job.location && (
-            <span className="chip" style={{ fontSize: 11 }}>
-              <Icon d={Icons.loc} size={10} />
+            <span className="chip" style={{ fontSize: 11.5 }}>
+              <Icon d={Icons.loc} size={11} />
               {job.location}
             </span>
           )}
           {job.salary && (
-            <span className="chip" style={{ fontSize: 11 }}>
-              <Icon d={Icons.cash} size={10} />
+            <span className="chip" style={{ fontSize: 11.5 }}>
+              <Icon d={Icons.cash} size={11} />
               {job.salary}
             </span>
           )}
-          <span className="chip" style={{ fontSize: 11 }}>
-            <Icon d={Icons.clock} size={10} />
+          <span className="chip" style={{ fontSize: 11.5 }}>
+            <Icon d={Icons.clock} size={11} />
             {posted}
           </span>
           {job.remote && (
-            <span className="chip warn" style={{ fontSize: 11 }}>Remote</span>
+            <span className="chip warn" style={{ fontSize: 11.5 }}>Remote</span>
           )}
         </div>
 
         {/* Score bar */}
-        <div style={{ marginBottom: matched.length > 0 || missing.length > 0 ? 12 : 0 }}>
-          <ScoreSegments segments={segments} height={5} />
-        </div>
+        <ScoreSegments segments={segments} height={5} />
 
         {/* Skill chips */}
         {(matched.length > 0 || missing.length > 0) && (
-          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 14 }}>
             {matched.map(s => (
-              <Chip key={s} variant="match" icon={<Icon d={Icons.check} size={10} strokeWidth={2.4} />}>
+              <Chip key={s} variant="match" icon={<Icon d={Icons.check} size={10} strokeWidth={2.5} />}>
                 {s}
               </Chip>
             ))}
