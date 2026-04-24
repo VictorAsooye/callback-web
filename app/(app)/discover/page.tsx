@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { WebSidebar } from '@/components/WebSidebar';
 import { ScoreRing } from '@/components/ScoreRing';
 import { ScoreSegments, type Segment } from '@/components/ScoreSegments';
@@ -10,6 +11,7 @@ import { Chip } from '@/components/Chip';
 import { Icon, Icons } from '@/components/Icons';
 import { useJobs, type ScoredJob } from '@/hooks/useJobs';
 import { useAuthStore } from '@/store/authStore';
+import { saveJobById } from '@/lib/jobsCache';
 
 function formatPostedDate(postedAt: string | null): string {
   if (!postedAt) return 'Unknown';
@@ -57,11 +59,17 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
   const { matched, missing } = getMatchedSkills(job, userSkills);
   const avatarLabel = job.company.split(' ').map(w => w[0]).slice(0, 2).join('');
   const posted = formatPostedDate(job.posted_at);
+  const router = useRouter();
+
+  function handleClick() {
+    saveJobById(job.source_id, job);
+    router.push(`/job/${job.source_id}`);
+  }
 
   return (
-    <Link
-      href={`/job/${job.source_id}`}
-      style={{ textDecoration: 'none', display: 'block' }}
+    <div
+      onClick={handleClick}
+      style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}
     >
       <div className="card" style={{ padding: 20, cursor: 'pointer', transition: 'border-color 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--hairline-strong)')}
@@ -123,7 +131,7 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
 

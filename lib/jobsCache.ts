@@ -34,3 +34,21 @@ export function clearJobCache(userId: string, role: string): void {
     // non-fatal
   }
 }
+
+// ——— Per-job session cache (for detail page lookup) ———
+export function saveJobById<T>(sourceId: string, job: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(`@callback/job/${sourceId}`, JSON.stringify(job));
+  } catch { /* non-fatal */ }
+}
+
+export function loadJobById<T>(sourceId: string): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(`@callback/job/${sourceId}`);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}

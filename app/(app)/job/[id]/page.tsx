@@ -13,6 +13,8 @@ import { Icon, Icons } from '@/components/Icons';
 import { useAuthStore } from '@/store/authStore';
 import { getSupabaseClient } from '@/lib/supabase';
 import { calculateCallbackScore, type Job, type UserPreferences } from '@/lib/score';
+import { loadJobById } from '@/lib/jobsCache';
+import type { ScoredJob } from '@/hooks/useJobs';
 
 interface ScoredJobDetail extends Job {
   score: number;
@@ -59,6 +61,29 @@ export default function JobDetailPage() {
     async function loadJob() {
       setLoading(true);
       try {
+        // 1. Check session cache first (populated when clicking from discover)
+        const cached = loadJobById<ScoredJob>(jobId);
+        if (cached) {
+          // Fetch user prefs to re-score if session available
+          const prefs: UserPreferences = { skills: [], wantsRemote: false };
+          if (session) {
+            const supabase = getSupabaseClient();
+            const { data } = await supabase.from('users').select('preferences').eq('id', session.user.id).single();
+            Object.assign(prefs, (data?.preferences as UserPreferences) ?? {});
+          }
+          setUserPrefs(prefs);
+          const breakdown = calculateCallbackScore(cached as unknown as Job, prefs);
+          setJob({
+            ...(cached as unknown as Job),
+            score: breakdown.total,
+            scoreBreakdown: breakdown,
+            applyLink: cached.applyLink ?? '',
+          });
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fallback: look up in Supabase DB
         const supabase = getSupabaseClient();
         const [jobResult, profileResult] = await Promise.all([
           supabase.from('jobs').select('*').eq('source_id', jobId).single(),
@@ -82,7 +107,7 @@ export default function JobDetailPage() {
           applyLink: rawJob.apply_link ?? '',
         });
       } catch {
-        // Job not in DB yet — would normally be fetched from JSearch here
+        // silently handle
       } finally {
         setLoading(false);
       }

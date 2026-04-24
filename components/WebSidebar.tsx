@@ -42,7 +42,7 @@ export function WebSidebar({ active }: WebSidebarProps) {
       flexShrink: 0,
     }}>
       <div style={{ padding: '0 6px 18px' }}>
-        <Wordmark height={26} />
+        <Wordmark height={38} />
       </div>
 
       {NAV_ITEMS.map((item) => {
