@@ -71,53 +71,53 @@ function JobCard({ job, userSkills }: { job: ScoredJob; userSkills: string[] }) 
       onClick={handleClick}
       style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}
     >
-      <div className="card" style={{ padding: 22, cursor: 'pointer', transition: 'border-color 0.15s' }}
+      <div className="card" style={{ padding: 24, cursor: 'pointer', transition: 'border-color 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--hairline-strong)')}
         onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--hairline)')}
       >
-        {/* Header row — avatar + company/title + score ring */}
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 16 }}>
-          <Placeholder label={avatarLabel} w={52} h={52} />
+        {/* Header row */}
+        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 18 }}>
+          <Placeholder label={avatarLabel} w={60} h={60} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, letterSpacing: '0.02em' }}>
+            <div style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 5, letterSpacing: '0.01em' }}>
               {job.company}
             </div>
-            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
               {job.title}
             </div>
           </div>
-          <ScoreRing value={job.score} size={60} stroke={5} />
+          <ScoreRing value={job.score} size={72} stroke={6} />
         </div>
 
         {/* Meta chips */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 16 }}>
           {job.location && (
-            <span className="chip" style={{ fontSize: 11.5 }}>
+            <span className="chip" style={{ fontSize: 12 }}>
               <Icon d={Icons.loc} size={11} />
               {job.location}
             </span>
           )}
           {job.salary && (
-            <span className="chip" style={{ fontSize: 11.5 }}>
+            <span className="chip" style={{ fontSize: 12 }}>
               <Icon d={Icons.cash} size={11} />
               {job.salary}
             </span>
           )}
-          <span className="chip" style={{ fontSize: 11.5 }}>
+          <span className="chip" style={{ fontSize: 12 }}>
             <Icon d={Icons.clock} size={11} />
             {posted}
           </span>
           {job.remote && (
-            <span className="chip warn" style={{ fontSize: 11.5 }}>Remote</span>
+            <span className="chip warn" style={{ fontSize: 12 }}>Remote</span>
           )}
         </div>
 
-        {/* Score bar */}
-        <ScoreSegments segments={segments} height={5} />
+        {/* Score bar — segmented */}
+        <ScoreSegments segments={segments} height={6} />
 
         {/* Skill chips */}
         {(matched.length > 0 || missing.length > 0) && (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 14 }}>
+          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 14 }}>
             {matched.map(s => (
               <Chip key={s} variant="match" icon={<Icon d={Icons.check} size={10} strokeWidth={2.5} />}>
                 {s}
