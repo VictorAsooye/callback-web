@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/authStore';
 import { getSupabaseClient } from '@/lib/supabase';
 import { calculateCallbackScore, type Job, type UserPreferences } from '@/lib/score';
 import { loadJobById } from '@/lib/jobsCache';
+import { fetchJobById } from '@/lib/jobs';
 import type { ScoredJob } from '@/hooks/useJobs';
 
 interface ScoredJobDetail extends Job {
@@ -90,22 +91,33 @@ export default function JobDetailPage() {
           session ? supabase.from('users').select('preferences').eq('id', session.user.id).single() : Promise.resolve({ data: null }),
         ]);
 
-        if (!jobResult.data) {
+        const prefs: UserPreferences = (profileResult.data?.preferences as UserPreferences) ?? { skills: [], wantsRemote: false };
+        setUserPrefs(prefs);
+
+        if (jobResult.data) {
+          const rawJob = jobResult.data as Job & { apply_link?: string };
+          const breakdown = calculateCallbackScore(rawJob, prefs);
+          setJob({
+            ...rawJob,
+            score: breakdown.total,
+            scoreBreakdown: breakdown,
+            applyLink: rawJob.apply_link ?? '',
+          });
           setLoading(false);
           return;
         }
 
-        const rawJob = jobResult.data as Job & { apply_link?: string };
-        const prefs: UserPreferences = (profileResult.data?.preferences as UserPreferences) ?? { skills: [], wantsRemote: false };
-        setUserPrefs(prefs);
-
-        const breakdown = calculateCallbackScore(rawJob, prefs);
-        setJob({
-          ...rawJob,
-          score: breakdown.total,
-          scoreBreakdown: breakdown,
-          applyLink: rawJob.apply_link ?? '',
-        });
+        // 3. Final fallback: fetch directly from JSearch by job_id
+        const fresh = await fetchJobById(jobId);
+        if (fresh) {
+          const breakdown = calculateCallbackScore(fresh as unknown as Job, prefs);
+          setJob({
+            ...(fresh as unknown as Job),
+            score: breakdown.total,
+            scoreBreakdown: breakdown,
+            applyLink: fresh.applyLink ?? '',
+          });
+        }
       } catch {
         // silently handle
       } finally {

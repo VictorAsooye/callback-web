@@ -181,6 +181,25 @@ export async function fetchSingleQuery(
   return data.data.map(normalizeJob);
 }
 
+/** Fetch a single job by its JSearch job_id */
+export async function fetchJobById(jobId: string): Promise<ReturnType<typeof normalizeJob> | null> {
+  try {
+    const params = new URLSearchParams({ job_id: jobId, extended_publisher_details: 'false' });
+    const response = await fetch(`${JSEARCH_BASE}/job-details?${params}`, {
+      headers: {
+        'X-RapidAPI-Key': RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
+      },
+    });
+    if (!response.ok) return null;
+    const data = await response.json() as { data: JSearchJob[]; status: string };
+    if (data.status !== 'OK' || !data.data?.length) return null;
+    return normalizeJob(data.data[0]);
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchJobs(options: FetchJobsOptions): Promise<ReturnType<typeof normalizeJob>[]> {
   const { query, location, remoteOnly = false, page = 1, numPages = 1 } = options;
   const queries = getRelatedQueries(query);
